@@ -62,12 +62,12 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
                 </div>
                 <p><small><?php echo __('Click check mark to select/unselect font');?></small></p>
                 <p style="font-size: 10px; font-weight: bold; color: red;"><?php echo __('Please remove unused fonts to make the design editor loads faster');?></p>
-               <div class="gg-font-preview-wrap-inner">
+                <div class="gg-font-preview-wrap-inner">
                     <div class="gg-font-preview" ng-repeat="font in fonts | startFrom:filterFont.currentPage*filterFont.pageSize | limitTo:filterFont.pageSize">
                         <div class="gg-font-preview-inner-wrap" style="font-family: '{{font.family}}',-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif">
                             <div class="gg-font-preview-inner">
                                 <p class="gg-font-name">{{font.family}}</p>
-                                <p font-on-load data-preview="fSubsets[font.subsets[0]]['preview_text']" data-font="font.family" ><span class="font-preview" style="display: none;" contenteditable="true">{{fSubsets}}</span></p>
+                                <p font-on-load data-preview="fSubsets[font.subsets[0]]['preview_text']" data-font="font.family" ><span class="font-preview" style="display: none;" contenteditable="true">{{fSubsets[font.subsets[0]]['preview_text']}}</span></p>
                                 <span title="{{font.selected ? '<?php echo __('Unselect');?>' : '<?php echo __('Select');?>'}}" ng-class="font.selected ? '' : 'uncheck'" class="action dashicons dashicons-yes disable" ng-click="selectFont( font, $event )"></span>
                             </div>
                         </div>    
@@ -78,23 +78,19 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
         </div>
     </div>
 </div>
-<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'assets/libs/fontfaceobserver.js'; ?>"></script>
 
- <?php 
-        $path = NBDESIGNER_DATA_DIR. 'googlefonts.json';
-        $selected_fonts = file_get_contents($path);
-        if($selected_fonts == '') $selected_fonts = '[]';  
- ?>
+<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'assets/libs/jquery.min.js'; ?>"></script>
+<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'assets/libs/jquery-ui.min.js'; ?>"></script>
+<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'assets/libs/angular-1.6.9.min.js'; ?>"></script>
+<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'assets/libs/fontfaceobserver.js'; ?>"></script>
+<script type='text/javascript' src="<?php echo NBDESIGNER_PLUGIN_URL .'sweetalert.min.js'; ?>"></script>
+
 <script type="text/javascript">
-   require([
-       'jquery',
-      'jquery/ui',
-       'angularjs',
-     'sweetalert',
-     'underscore'
-  
-], function ($, ui, angular, sweetalert, _) {
-   
+    <?php 
+        $path = NBDESIGNER_DATA_DIR. '/googlefonts.json';
+        $selected_fonts = file_get_contents($path);
+        if( $selected_fonts == '' ) $selected_fonts = '[]';
+    ?>
     var admin_nbds = {
             assets_images   :   "<?php echo NBDESIGNER_PLUGIN_URL . 'assets/images/'?>",
             mes_success   :   "<?php echo __('Success')?>",
@@ -113,12 +109,9 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
             url   :   "<?php echo $this->getUrl('onlinedesign/googlefont/update', array('_current'=>true)); ?>",
             url_check   :   "<?php echo NBDESIGNER_AUTHOR_SITE?>",
             url_gif   :   "<?php echo NBDESIGNER_PLUGIN_URL. 'assets/images/loading.gif'?>"
-        }
-    
-    var selected_fonts ={<?php echo $selected_fonts; ?>};
- 
-    var ggFonts = {<?php echo file_get_contents(NBDESIGNER_DATA_DIR. 'google-fonts-ttf.json'); ?>};
-    var fSubset= {<?php echo file_get_contents(NBDESIGNER_DATA_DIR. 'subsets.json'); ?>};
+        };
+    var selected_fonts= <?php echo $selected_fonts; ?>;
+    var ggFonts = <?php echo file_get_contents(NBDESIGNER_PLUGIN_DIR. '/data/google-fonts-ttf.json'); ?>;
 
     var fontApp = angular.module('font-app', []);
     fontApp.controller('fontCtrl', ['$scope', 'fontObject', 'filterFontFilter', function($scope, fontObject, filterFontFilter){
@@ -129,10 +122,8 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
             $scope.updateSelectedFont();
         };
         $scope.selectedFonts = [];
-        $scope.allFonts = ggFonts.items;
-      
-        $scope.fSubsets = "<?php echo file_get_contents(NBDESIGNER_DATA_DIR. 'subsets.json'); ?>";
- 
+        $scope.allFonts = ggFonts.items
+        $scope.fSubsets = <?php echo json_encode(nbd_font_subsets()); ?>;
         $scope.filterFont = {};
         $scope.filterFont.currentPage = 0;
         $scope.filterFont.pageSize = 20;
@@ -181,7 +172,7 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
             jQuery.ajax({
                 url: admin_nbds.url,
                 method: "POST",
-                data: {action: 'nbdesigner_add_google_font', fonts: JSON.stringify($scope.selectedFonts), nonce: admin_nbds.nonce, form_key: window.FORM_KEY},
+                data: {action: 'nbdesigner_add_google_font', fonts: JSON.stringify($scope.selectedFonts), 'nonce': admin_nbds.nonce, form_key: window.FORM_KEY},
                 beforeSend: function () {
                     jQuery('.showbox').show();
                 },
@@ -237,7 +228,7 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
                 filterFont: '=filterFont',
                 total: '=total'
             },
-            template:'{{filterFont.totalPages}}<span ng-if="filterFont.currentPage > 0" ng-click="changePage(0)"><?php echo __('First');?></span><span ng-if="filterFont.currentPage > 1" ng-click="changePage(filterFont.currentPage-1)">{{filterFont.currentPage}}</span><span ng-click="changePage(filterFont.currentPage)" class="active">{{filterFont.currentPage + 1}}</span><span ng-if="filterFont.currentPage < (totalPages - 2)" ng-click="changePage(filterFont.currentPage+1)">{{filterFont.currentPage + 2}}</span><span ng-if="filterFont.currentPage < (totalPages - 1)" ng-click="changePage(totalPages-1)"><?php echo __('Last');?></span>',
+            template: '{{filterFont.totalPages}}<span ng-if="filterFont.currentPage > 0" ng-click="changePage(0)"><?php echo __('First');?></span><span ng-if="filterFont.currentPage > 1" ng-click="changePage(filterFont.currentPage-1)">{{filterFont.currentPage}}</span><span ng-click="changePage(filterFont.currentPage)" class="active">{{filterFont.currentPage + 1}}</span><span ng-if="filterFont.currentPage < (totalPages - 2)" ng-click="changePage(filterFont.currentPage+1)">{{filterFont.currentPage + 2}}</span><span ng-if="filterFont.currentPage < (totalPages - 1)" ng-click="changePage(totalPages-1)"><?php echo __('Last');?></span>',
             link: {
                 
             },
@@ -321,7 +312,4 @@ $list_all_google_font = $nbdesigner->nbdesigner_get_list_google_font();
             }
         }
     }]);
-   });
 </script>
-
-
