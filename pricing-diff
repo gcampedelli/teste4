@@ -379,17 +379,11 @@ if( $cart_item_key != ''){ ?>
 <script type="text/javascript">
     var nbds_frontend = <?php echo $jsonHelper->jsonEncode($nbd_js_object)?>;
 </script>
-<!-- <?php if( $in_quick_view ): ?>
-<script type="text/javascript" src="<?php //echo NBPRICING_PLUGIN_URL .'libs/accounting.min.js'; ?>" ></script>
+
 <script type="text/javascript">
-    require(['bundle-modern', 'designer-modern', 'lodash'], function(){
-    });
-</script>
-<?php endif; ?> -->
-<script type="text/javascript">
-    <?php //if( !$in_quick_view ): ?>
-    require(['jquery', 'jquery/ui', 'lodash', 'accounting', 'serializejson', 'angularjs'], function($){ 
-    <?php //endif; ?>
+   
+    require(['jquery', 'jquery/ui', 'nblodash', 'perfect-scrollbar', 'accounting', 'serializejson', 'nbangular'], function($){ 
+   
         $(document).ready(function() {
             if(!$('#product_addtocart_form').attr('enctype')) $('#product_addtocart_form').attr('enctype', 'multipart/form-data');
 
@@ -765,14 +759,7 @@ if( $cart_item_key != ''){ ?>
                     angular.forEach(check, function(c){
                         total_check = total_check && c;
                     });
-                    /*if( $scope.options.display_type == 3 ){
-                        var check_bulk_quantity = false;
-                        if( jQuery('.nbb-qty-field').length == 0 ) check_bulk_quantity = true;
-                        jQuery.each(jQuery('.nbb-qty-field'), function(key, el){
-                            if(jQuery(el).val() != '') check_bulk_quantity = true;
-                        });
-                        total_check = total_check && check_bulk_quantity;
-                    }*/
+                  
                     if(total_check){
                         $scope.postOptionsToEditor();
                         $scope.calculate_price();
@@ -875,7 +862,6 @@ if( $cart_item_key != ''){ ?>
                 return !check;
             };
 
-            //effect pricing option to design editor
             $scope.postOptionsToEditor = function(){
                 angular.copy( nbOption.odOption, nbOption.lastOdOption );
                 angular.copy( nbOption.extraOdOption, nbOption.lastExtraOdOption );
@@ -919,9 +905,7 @@ if( $cart_item_key != ''){ ?>
                                     var list_page = [0, 1];
                                     if( field.value == 0 ){
                                         list_page = [0];
-                                    } /*else if ( field.value == 1 ){
-                                        list_page = [1];
-                                    }*/
+                                    } 
                                     nbOption.odOption.page = {
                                         list_page: list_page,
                                         field_id: field_id
@@ -1047,22 +1031,18 @@ if( $cart_item_key != ''){ ?>
                             
                         });
                     <?php endif;?>
-                    /* send option to editor */
                     if( angular.equals( nbOption.odOption, nbOption.lastOdOption ) ){
-                        // jQuery(document).triggerHandler( 'change_nbo_options_without_od_option' );
-                        // window.postMessage('change_nbo_options_without_od_option', window.location.origin);
+                      
                         
                     }else{
-                        //jQuery(document).triggerHandler( 'change_nbo_options_with_od_option' );
-                        // window.postMessage('change_nbo_options_with_od_option', window.location.origin);
+                     
                         $scope.changePrintingOptions();
                     };
                 <?php endif;?>
                 if( !angular.equals( nbOption.extraOdOption, nbOption.lastExtraOdOption ) ){
-                    //jQuery(document).triggerHandler( 'change_nbo_extra_od_options' );
+                 
                     window.postMessage('change_nbo_extra_od_options', window.location.origin);
                 }
-                //jQuery(document).triggerHandler( 'change_nbo_options' );
                 window.postMessage('change_nbo_options', window.location.origin);
             };
             <?php if( $enable_gallery_api ): ?>
@@ -1463,6 +1443,7 @@ if( $cart_item_key != ''){ ?>
                 nbOption.status = true; 
                 <?php if($options['display_type'] == 3 && count($options['bulk_fields'])): ?>
                 jQuery('input[name="add-to-cart"]').remove();
+                 jQuery('header').remove(); //Gabriela
                 jQuery('button[name="add-to-cart"]').attr('name', 'nbo-add-to-cart');
                 jQuery('input[name="qty"], .quantity .screen-reader-text').remove();
                 <?php endif; ?>
@@ -3891,16 +3872,9 @@ if( $cart_item_key != ''){ ?>
             var $scope = angular.element(document.getElementById(nbOption.crtlId)).scope();
             $scope.change_product_image_without_field( data );
         });
-        <?php if( $enable_gallery_api ): ?>
-        jQuery(document).on( 'nbd_update_gallery', function(e, data){
-            if( angular.isDefined( data.gallery ) ){
-                var $scope = angular.element(document.getElementById(nbOption.crtlId)).scope();
-                $scope.change_gallery_image( data.gallery, data.folder );
-            }
-        });
-        <?php endif; ?>
-    <?php //if( !$in_quick_view ): ?>
+       
+   
     });
-    <?php //endif; ?>
+   
 </script>
 </div>
